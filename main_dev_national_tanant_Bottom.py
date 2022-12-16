@@ -104,6 +104,13 @@ def current_top_5_property():
     top_5_values = current_year_data.sort_values(by=['NOI_Persqft'], ascending=False)[:5]['NOI_Persqft'].to_list()
     return top5properties,top_5_values
 
+def current_bottom_5_property():
+    current_year_data = merge_with_sqft()
+    # current_year_data = current_year_data[current_year_data['NOI_Persqft']>0]
+    top5properties = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['National_tenant'].to_list()
+    top_5_values = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['NOI_Persqft'].to_list()
+    return top5properties,top_5_values
+
 
 def PLOT(x_axis,y_axis,percent_diff):
     sns.set(rc={'axes.facecolor': '#f6f6f6', 'figure.facecolor': '#f6f6f6'})
@@ -227,7 +234,7 @@ def PLOT(x_axis,y_axis,percent_diff):
 
 def create_html_template(graph):
     insight_title = 'NET OPERATING INCOME : PSF'
-    insight_message = 'Top 5 National Tenants'
+    insight_message = 'Bottom 5 National Tenants'
     insight_graph = graph
     connection = sql_connection()
     data = pd.read_sql("select * from [dbo].[EmailTemplateMasterInsights] where TemplateId = 3", connection)
@@ -235,7 +242,7 @@ def create_html_template(graph):
     Html_Template = data.Body[0]
     final = Html_Template.format(insight_title=insight_title, insight_message=insight_message,
                                  insight_graph=insight_graph)
-    print(final)
+
     return final,data
 
 
@@ -243,7 +250,7 @@ if __name__=='__main__':
     try:
         global year
         year = str(current_date.year)
-        top5properties,top_5_values = current_top_5_property()
+        top5properties,top_5_values = current_bottom_5_property()
 
         # ================last_year====================
         year = str(current_date.year-1)
