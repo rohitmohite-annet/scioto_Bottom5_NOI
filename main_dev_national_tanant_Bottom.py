@@ -106,7 +106,7 @@ def current_top_5_property():
 
 def current_bottom_5_property():
     current_year_data = merge_with_sqft()
-    # current_year_data = current_year_data[current_year_data['NOI_Persqft']>0]
+    current_year_data = current_year_data[current_year_data['NOI_Persqft']>0]
     top5properties = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['National_tenant'].to_list()
     top_5_values = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['NOI_Persqft'].to_list()
     return top5properties,top_5_values
@@ -192,6 +192,7 @@ def PLOT(x_axis,y_axis,percent_diff):
 
             # Use Y value as label and format number with one decimal place
             #         label = "{:.1f}".format(y_value)
+            label = ''
             if float(perdif) > 0:
                 label = "\u21E7 +{}%".format(perdif)
             elif float(perdif) < 0:
@@ -199,7 +200,8 @@ def PLOT(x_axis,y_axis,percent_diff):
                 neg_handle = abs(jk)
                 label = "\u21E9 -{}%".format(neg_handle)
             else:
-                label = "{}%".format(perdif)
+                pass
+                # label = "{}%".format(perdif)
 
             # Create annotation
             ax.annotate(
@@ -259,8 +261,11 @@ if __name__=='__main__':
 
         last_year_values = []
         for prop in top5properties:
-            value = datamerged_top5_last_year[datamerged_top5_last_year['National_tenant'] == prop]['NOI_Persqft'].values[0]
-            last_year_values.append(value)
+            if datamerged_top5_last_year[datamerged_top5_last_year['National_tenant'].isin([prop])].empty == True:
+                last_year_values.append(0)
+            else:
+                value = datamerged_top5_last_year[datamerged_top5_last_year['National_tenant'] == prop]['NOI_Persqft'].values[0]
+                last_year_values.append(value)
 
     except Exception as e:
         logging.info(e)
@@ -270,10 +275,12 @@ if __name__=='__main__':
         # ===========percent diff each property=====================
         percent_diff = []
         for curre,prev in zip(top_5_values,last_year_values):
-
-            pe_df = ((curre - prev) / prev) * 100
-            ok = "{:.2f}".format(pe_df)
-            percent_diff.append(ok)
+            if prev == 0:
+                percent_diff.append(0)
+            else:
+                pe_df = ((curre - prev) / prev) * 100
+                ok = "{:.2f}".format(pe_df)
+                percent_diff.append(ok)
 
 
         # ==============PLOT=====================
