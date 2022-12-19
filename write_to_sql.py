@@ -9,13 +9,12 @@ conn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database
 cursor = conn.cursor()
 
 from datetime import date
-
 # now = datetime.datetime.now()
 # current_time =  now.strftime("%d-%m-%Y %H:%M:%S")
 
 dict = {
-    'InsightsName': 'National tenants with Highest Operating Expense',
-    'Subject': 'Insight: National tenants with Highest Operating Expense',
+    'InsightsName': 'Portfolio NOI',
+    'Subject': 'Insight: Portfolio Net Operating Income',
     'Body': '''<html>
 <head>
 <title>mailer_4seeInsights2</title>
@@ -54,7 +53,7 @@ dict = {
 	</tr>
 	<tr>
 		<td colspan="12">
-			<p style="margin-top:25px; margin-bottom:35px; text-align:center; font-family:Arial Narrow, Helvetica, sans-serif; font-size:24px; font-weight:bold; color:#1A7CAB;">IS THIS INSIGHT USEFUL ?</p>
+			<p style="margin-top:25px; margin-bottom:35px; text-align:center; font-family:Arial Narrow, Helvetica, sans-serif; font-size:24px; font-weight:bold; color:#1A7CAB;">IS THIS INSIGHT USEFUL?</p>
         </td>
 	</tr>
 	<tr>
@@ -65,7 +64,7 @@ dict = {
 "><a href="https://qascioto4seeapp.azurewebsites.net/income-statement" target="_blank" style="text-decoration:none;display:inline-block;color:#ffffff;background-color:#96ae47;border-radius:40px;width:auto;padding-top: 10px;padding-bottom: 10px;margin-bottom:35px;font-family:Arial Narrow, Helvetica, sans-serif;text-align:center;margin-top:0;"><span style="padding-left: 45px;padding-right: 45px;font-size: 20px;display:inline-block;font-weight: bold;"><span dir="ltr" style="/ word-break: break-word; /"><span style="line-height: 20px; padding-left:15px; padding-right:15px;">YES</span></span></span></a>
 		</div>
         </td>
-
+		
 		<td colspan="4" style="">
 			<div class="alignment" align="center" style="
     float: right;
@@ -79,7 +78,7 @@ dict = {
 			<hr></hr></td>
 	</tr>
 	<tr>
-
+		
 		<td colspan="12" style="text-align: center;">
 			<img src="https://qascioto4seeapp.azurewebsites.net/public/vendor/images/logo/mailer_4seeInsights2_17.jpg" width="267" height="69" alt="" style="
     text-align: center;
@@ -128,27 +127,27 @@ dict = {
 </body>
 </html>
 ''',
-    'EmailTOAddress': 'siddhi.utekar@annet.com',
+    'EmailTOAddress': 'nilesh.thote@annet.com',
     'EmailCCAddress': 'rohit.mohite@annet.com,siddhi.utekar@annet.com,nilesh.thote@annet.com',
     'CreatedBy': '',
-
 }
 a = str(dict.get('Body'))
+print(a)
 
-# dataframe_1 = pd.DataFrame([dict], columns=dict.keys())
-# dataframe_1.to_sql("EmailTemplateMasterInsights", schema='dbo',cnxn)
-
+dataframe_1 = pd.DataFrame([dict], columns=dict.keys())
+# dataframe_1.to_sql("EmailTemplateMasterInsights", schema='dbo',cursor)
+#
 import sqlalchemy
 import pyodbc
-# from sqlalchemy import create_engine
-# import urllib
+from sqlalchemy import create_engine
+import urllib
+
+quoted = urllib.parse.quote_plus('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
+engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
+# # write the DataFrame to a table in the sql database
+dataframe_1.to_sql('EmailTemplateMasterInsights', schema='dbo', con = engine,if_exists='append',index = False)
+
+
 #
-# quoted = urllib.parse.quote_plus('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
-# engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
-# # # write the DataFrame to a table in the sql database
-# dataframe_1.to_sql('EmailTemplateMasterInsights', schema='dbo', con = engine,if_exists='append',index = False)
-
-
-
-sqft = pd.read_sql("select [TemplateId],[Body] FROM [dbo].[EmailTemplateMasterInsights] where  TemplateId = 3",conn)
-print(sqft.Body[0])
+# sqft = pd.read_sql("select [TemplateId],[Body] FROM [dbo].[EmailTemplateMasterInsights] where  TemplateId = 3",conn)
+# print(sqft.Body[0])

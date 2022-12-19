@@ -86,6 +86,7 @@ def calcluate():
         towrite = {'Index' : ind ,'National_tenant': i,'KPI' : KPI,'Type' :Type ,'YEAR':year ,'NOI_amount': NOI_sum}
         dataframe_to_write = pd.DataFrame([towrite], columns=towrite.keys())
         Final_dataframe = Final_dataframe.append(dataframe_to_write, ignore_index=True)
+        Final_dataframe.to_csv()
     return Final_dataframe
 
 def merge_with_sqft():
@@ -106,7 +107,8 @@ def current_top_5_property():
 
 def current_bottom_5_property():
     current_year_data = merge_with_sqft()
-    current_year_data = current_year_data[current_year_data['NOI_Persqft']>0]
+    # current_year_data.to_csv('current_yeardata.csv')
+    # current_year_data = current_year_data[current_year_data['NOI_Persqft']>0]
     top5properties = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['National_tenant'].to_list()
     top_5_values = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['NOI_Persqft'].to_list()
     return top5properties,top_5_values
@@ -161,22 +163,24 @@ def PLOT(x_axis,y_axis,percent_diff):
 
     sns.despine(top=True, right=True)
 
-    ax.tick_params(axis=u'both', which=u'both', length=0,pad=6)
-    plt.tick_params(labelsize=14.5,pad=6)
-    for index, value in enumerate(y_axis):
-        plt.text(index, value * 1.02, '$' + str(value), fontsize=17, ha='center', va='top',
-                 color='white', weight='bold')
+    ax.tick_params(axis=u'both', which=u'both', length=0, pad=6)
+    plt.tick_params(labelsize=14.5, pad=6)
+    # for index, value in enumerate(y_axis):
+    #     plt.text(index, value * 1.02, '$' + str(value), fontsize=17, ha='center', va='top',
+    #              color='white', weight='bold')
 
     plt.ticklabel_format(style='plain', axis='y')
     plt.rcParams["font.family"] = "Open Sans"
 
-    def add_value_labels(ax, spacing=16):
+    def add_value_labels(ax, spacing=10):
         # For each bar: Place a label
         for perdif, rect in zip(percent_diff[::-1], ax.patches):
 
             # Get X and Y placement of label from rect.
             y_value = rect.get_height()
             x_value = rect.get_x() + rect.get_width() / 2
+            #         print('x_value',x_value)
+
 
             # Number of points between bar and label. Change to your liking.
             space = spacing
@@ -200,31 +204,43 @@ def PLOT(x_axis,y_axis,percent_diff):
                 neg_handle = abs(jk)
                 label = "\u21E9 -{}%".format(neg_handle)
             else:
-                pass
-                # label = "{}%".format(perdif)
-
-            # Create annotation
-            ax.annotate(
-                label,  # Use `label` as label
-                (x_value, y_value),  # Place label at end of the bar
-                xytext=(0, space),  # Vertically shift label by `space`
-                textcoords="offset points",  # Interpret `xytext` as offset in points
-                fontsize = 17,
-                weight='bold',
-                ha='center',  # Horizontally center label
-                va=va)  # Vertically align label differently for
-            # positive and negative values.
+                #             pass
+                label = "{}%".format(perdif)
+            if rect.get_y() < 0:
+                ax.annotate(
+                    label,  # Use `label` as label
+                    (x_value, 0),  # Place label at end of the bar
+                    xytext=(0, space),  # Vertically shift label by `space`
+                    textcoords="offset points",  # Interpret `xytext` as offset in points
+                    fontsize=17,
+                    weight='bold',
+                    ha='center',  # Horizontally center label
+                    va=va)  # V
+            else:
+                ax.annotate(
+                    label,  # Use `label` as label
+                    (x_value, y_value),  # Place label at end of the bar
+                    xytext=(0, space),  # Vertically shift label by `space`
+                    textcoords="offset points",  # Interpret `xytext` as offset in points
+                    fontsize=17,
+                    weight='bold',
+                    ha='center',  # Horizontally center label
+                    va=va)  # Vertically align label differently for
+                # positive and negative values.
 
     # Call the function above. All the magic happens there.
     add_value_labels(ax)
     ax.yaxis.set_major_formatter(currency)
+    ax.bar_label(ax.containers[0], fontsize=15, label_type='edge', fmt='$' + '%g', padding=-15, color='white',
+                 weight='bold')
+    plt.axhline(y=0, color='black', linestyle='-')
     for label in (ax.get_xticklabels() + ax.get_yticklabels()):
         label.set_fontsize(17)
         label.set_fontweight('bold')
     ax.spines['left'].set_color('black')
     ax.spines['bottom'].set_color('black')
     plt.tight_layout()
-
+    #
     # plt.savefig('latest_5.png')
     image_stream = BytesIO()
     plt.savefig(image_stream)
